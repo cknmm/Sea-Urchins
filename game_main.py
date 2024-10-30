@@ -2,21 +2,20 @@
 import asyncio, random, time
 import threading as t
 import pygame
+pygame.init()
 from game_client import GameClient
 from game_objects import PlayerCharacter, PawnCharacter
-
-pygame.init()
 
 #inputs
 uri = input("Enter the server uri: ")
 pid = ""
-while len(pid) > 4 and " " not in pid:
+while len(pid) < 4 or " " in pid:
     pid = input("Enter your name (make sure that it's unique \
 while containing no spaces and atleast 5 characters long): ")
 
 #pygame variables
 main = pygame.display.set_mode((1000, 650)) #pygame main window
-font = pygame.font.Font(pygame.font.SysFont, 36)
+font = pygame.font.Font(None, 36)
 
 #in-game log variables
 message_queue = [] #TODO: Use later for implementing logs
@@ -39,13 +38,16 @@ t.Thread(target=asyncio.run, args=(
 def update_player_data():
     #forward check
     for player_name in GameClient.game_state:
-        if player_name not in players:
+        if player_name != pid and player_name not in players:
             #TODO: Report joined game
-            players[player_name] = PlayerCharacter(
-                GameClient.game_state[player_name]['x'],
-                GameClient.game_state[player_name]['y'],
-                20, player_name
-            )
+            try:
+                players[player_name] = PlayerCharacter(
+                    GameClient.game_state[player_name]['x'],
+                    GameClient.game_state[player_name]['y'],
+                    20, player_name
+                )
+            except KeyError:
+                pass
     #backward check
     for player_name in players.keys():
         if player_name not in GameClient.game_state:
@@ -59,16 +61,22 @@ while not(ie): #game loop
 
     s = time.time()
 
-    events = pygame.event.get()
-    for event in events:
+    pass_events = [] #events to pass to characters
+    for event in pygame.event.get():
         if event.type == pygame.QUIT: #quit when window closed
             ie = True
+        elif event.type == pygame.KEYDOWN:
+            pass_events.append(event)
+        elif event.type == pygame.KEYUP:
+            pass_events.append(event)
 
     #update characters
     update_player_data()
-    pawn.update(events)
+    pawn.update(pass_events)
     for player_name in players:
-        players[player_name].update(events)
+        players[player_name].update(pass_events)
+    #reset sync flag
+    GameClient.sync_flag = False
 
     #rendering
 
@@ -84,6 +92,9 @@ while not(ie): #game loop
 
     #lock at 60 fps
     dt = time.time() - s
-    fps = int(1/dt)
+    fps = int(1/dt) if dt != 0 else 60
     if dt < 0.0167:
         time.sleep(0.0167 - dt)
+
+GameClient.stop_flag = True
+pygame.quit()

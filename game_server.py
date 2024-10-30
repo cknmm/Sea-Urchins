@@ -6,7 +6,7 @@ import websockets
 
 class GameServer:
 
-    port = 8675
+    port = 12345
     game_state = defaultdict(dict)
 
     @staticmethod
@@ -16,8 +16,25 @@ class GameServer:
         message = await websocket.recv()
         client_state = json.loads(message)
         pid = client_state["id"]
-        GameServer.game_state[pid]['x'] = client_state['y']
-        GameServer.game_state[pid]['y'] = client_state['y']
+        print(f"Data received from {pid}: {client_state}")
+        try:
+            GameServer.game_state[pid]['x'] = client_state['x']
+            GameServer.game_state[pid]['y'] = client_state['y']
+            GameServer.game_state[pid]["color"] = \
+                client_state["color"]
+        except KeyError:
+            pass
         await websocket.send(json.dumps(
             GameServer.game_state
         ))
+
+    @staticmethod
+    async def main():
+        async with websockets.serve(GameServer.handler, 
+                                    "localhost",
+                                    GameServer.port):
+            print(f"Listening on port {GameServer.port}")
+            await asyncio.Future()
+
+if __name__ == "__main__":
+    asyncio.run(GameServer.main())
