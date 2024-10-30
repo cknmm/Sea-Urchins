@@ -1,0 +1,6 @@
+FROM python:3.9-alpine
+COPY game_server.py .
+COPY requirements.txt .
+RUN python3 -m pip install -r requirements.txt
+EXPOSE 12345
+CMD python3 game_server.py
