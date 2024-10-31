@@ -49,13 +49,15 @@ class PlayerCharacter:
         #for other client replicas it is their state
         try:
             if GameClient.sync_flag:
+                #update variables
                 self.x = GameClient.game_state[self.pid]['x']
                 self.y = GameClient.game_state[self.pid]['y']
                 self.color = GameClient.game_state[self.pid]["color"]
                 print(f"DEBUG: LOCAL: \
 {GameClient.local_client_state}\n GLOBAL: \
 {GameClient.game_state[self.pid]}")
-            print("Debug: Skipping sync")
+                print(f"Latency: {GameClient.latency}")
+            #print("Debug: Skipping sync")
         except KeyError:
             pass
 
@@ -108,7 +110,7 @@ class PawnCharacter(PlayerCharacter):
 
     def update(self, events: list[pygame.event.Event]):
 
-        super().update(events)
+        #super().update(events)
 
         #respond to input
         for event in events:
