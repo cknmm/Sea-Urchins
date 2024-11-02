@@ -53,10 +53,10 @@ class GameClient:
         await GameClient.server_socket.send(
             json.dumps(message)
         )
-        print("Debug: Local client sent")
+        #print("Debug: Local client sent")
 
         recv_state = await GameClient.server_socket.recv()
-        print("Debug: Local client recv")
+        #print("Debug: Local client recv")
         recv_state = json.loads(recv_state)
         GameClient.game_state = recv_state
         GameClient.sync_flag = True #ask players to sync
@@ -87,7 +87,7 @@ class GameClient:
                 )
 
                 await GameClient.connect()
-                print("Debug:", GameClient.latency)
+            print("Debug:", GameClient.latency, "ms")
         else:
             if GameClient.stop_flag:
                 try:

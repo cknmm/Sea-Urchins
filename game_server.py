@@ -14,7 +14,10 @@ class GameServer:
         """Called when a request is received"""
         
         while True:
-            message = await websocket.recv()
+            try:
+                message = await websocket.recv()
+            except websockets.exceptions.ConnectionClosedOK:
+                break
             client_state = json.loads(message)
             pid = client_state["id"]
             print(f"Data received from {pid}: {client_state}")
